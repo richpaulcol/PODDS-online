@@ -12,6 +12,7 @@ import numpy as np
 
 app = Flask(__name__)
 
+
 fig,axs = pp.subplots(2,1,sharex=True)
 
 @app.route('/')
@@ -19,9 +20,13 @@ def welcome():
 	flask.url_for('static', filename='style.css')
 	return render_template('PODDS.html')
 	
+#@app.route('/test')
+#def test():
+#	return "Dave"
+
 @app.route('/inputs')
 def plotting():
-	
+#	fig,axs = pp.subplots(2,1,sharex=True)
 	#print request.args['arg1']
 	Q_flush = np.float(request.args['Q_flush'])	## Getting the requests from the html server
 	Q_flush = Q_flush/1000.				
@@ -30,7 +35,7 @@ def plotting():
 	D = np.float(request.args['D'])
 	L = np.float(request.args['L'])
 	k_s = np.float(request.args['k_s'])
-	
+#	print "Dave"
 	
 		
 	#####  Undertaking simple scaling calcs
@@ -96,7 +101,7 @@ def plotting():
 	axs[1].set_xlim(0,maxt)
 	axs[1].set_ylim(0,np.max(Tend)*1.1)
 	
-	#mp.save_html(fig,'templates/Sample.html')
+	mp.save_html(fig,'templates/Sample.html')
 	return mp.fig_to_html(fig)
 	
 @app.route('/clear')

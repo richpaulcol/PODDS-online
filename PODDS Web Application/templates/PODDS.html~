@@ -114,7 +114,8 @@ function plotFunction()
 	var Qflush = document.getElementById("pipeQflush").value;
 	
 	const Http = new XMLHttpRequest();
-	var url='http://172.16.65.63:5000/inputs?Q_flush='+Qflush+'&Q_0='+Q0+'&D='+D+'&L='+L+'&k_s='+k;
+	var url='http://127.0.0.1:5000/inputs?Q_flush='+Qflush+'&Q_0='+Q0+'&D='+D+'&L='+L+'&k_s='+k;
+	
 	
 	
 	
@@ -130,7 +131,7 @@ function plotFunction()
 
 function clearFunction()
 {
-	var url='http://172.16.65.63:5000/clear'
+	var url='http://127.0.0.1:5000/clear'
 	document.getElementById("figure").src = url
 }
 </script>

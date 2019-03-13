@@ -1,0 +1,177 @@
+<!doctype html>
+
+<head>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<title>PODDS Web application</title>
+
+<html>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the header */
+header {
+    background-color: #666;
+    padding: 30px;
+    text-align: center;
+    font-size: 35px;
+    color: white;
+}
+
+/* Create two columns/boxes that floats next to each other */
+nav {
+    float: left;
+    width: 30%;
+    /*height: 300px;  only for demonstration, should be removed */
+    background: #ccc;
+    padding: 20px;
+}
+
+/* Style the list inside the menu */
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+article {
+    float: left;
+    padding: 20px;
+    width: 70%;
+    background-color: #f1f1f1;
+    /*height: 300px;  only for demonstration, should be removed */
+}
+
+/* Clear floats after the columns */
+section:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Style the footer */
+footer {
+    background-color: #777;
+    padding: 10px;
+    text-align: center;
+    color: white;
+}
+
+/* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
+@media (max-width: 600px) {
+    nav, article {
+        width: 100%;
+        height: auto;
+    }
+}
+</style>
+
+
+<body>
+
+<header>
+<h1>VCDM Web application</h1>
+<p>This application can be used to predict the discoluration from simple flushing events in pipes.</p>
+</header>
+
+<section>
+<nav>
+<h3>Pipe Length (m)</h3>
+<input type="number" id="pipeLength" value="100">
+<h3>Pipe Diameter (m)</h3>
+<input type="number" id="pipeDiameter" value="0.5">
+<h3>Pipe Roughness (m)</h3>
+<input type="number" id="pipeRoughness" value="0.001">
+<h3>Pre-flush Flow Rate (l/s)</h3>
+<input type="number" id="pipeQ0" value="10">
+
+<h3>Flushing Flow Rate (l/s)</h3>
+<input type="number" id="pipeQflush" value="100">
+</nav>
+
+<article>
+<button onclick="plotFunction()">Plot Turbidity Response</button>
+<button onclick="clearFunction()">Clear Turbidity Response</button>
+
+
+<!--<iframe id="figure" frameborder=0 height=540 width = 1000></iframe> -->
+
+<div id="tester" style="width:1000px;height:540px;"></div>
+
+</article>
+</section>
+
+
+
+
+<script>
+
+
+
+function plotFunction()
+{
+	var L = document.getElementById("pipeLength").value;
+	var D = document.getElementById("pipeDiameter").value;
+	var k = document.getElementById("pipeRoughness").value;
+	var Q0 = document.getElementById("pipeQ0").value;
+	var Qflush = document.getElementById("pipeQflush").value;
+	
+	<!-- Undertaking simple scaling calcs-->
+	var A = D*D * 3.1415/4	
+	var V = Qflush /1000 / A		
+	var TurnOver = (L/V)	
+	
+	var maxt = 3*TurnOver
+	var dt =TurnOver/1000.
+	
+	var t = []; 
+	for (var i = 1; i <= maxt; i++) {
+   		t.push(i*dt);
+	}
+	
+	
+	console.log(t);
+
+	<!-- Shear Stresses-->
+	var rho = 998
+	var g = 9.81 
+	var mu = 0.001
+	
+	var Re = rho * Q0 * D / (mu *A)
+	var ff =0
+	
+	var tau_s_0 = rho * g * (D / 4.0) * 0
+	
+	<!-- VCDM Parameters-->
+	var alpha = 5	
+	var beta = 0.005
+	
+	<!-- Output condition shear vector-->
+
+	TESTER = document.getElementById('tester');
+	Plotly.plot( TESTER, [{
+	x: t,
+	y: t }], {
+	margin: { t: 0 } } );
+	
+}
+
+<!--function clearFunction()-->
+<!--{-->
+<!--	var url='http://127.0.0.1:5000/clear'-->
+<!--	document.getElementById("figure").src = url-->
+<!--}-->
+</script>
+
+
+
+</body>
+</html>
+
+
