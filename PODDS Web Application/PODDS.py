@@ -72,6 +72,7 @@ def plotting():
 	# Calculation of the change in shear stress over time
 	for i in range(1,t.size):
 		tau_s[i] = tau_s[i-1] + dt * beta*(tau_a - tau_s[i-1])
+		
 		dN[i] = alpha* beta*(tau_a - tau_s[i-1])
 		T[i] = (4/D)*dN[i]
 		
