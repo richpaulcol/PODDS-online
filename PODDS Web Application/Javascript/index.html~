@@ -1,0 +1,213 @@
+<!doctype html>
+
+<head>
+	<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<title>PODDS Web application</title>
+
+<html>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the header */
+header {
+    background-color: #666;
+    padding: 30px;
+    text-align: center;
+    font-size: 35px;
+    color: white;
+}
+
+/* Create two columns/boxes that floats next to each other */
+nav {
+    float: left;
+    width: 30%;
+    /*height: 300px;  only for demonstration, should be removed */
+    background: #ccc;
+    padding: 20px;
+}
+
+/* Style the list inside the menu */
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+article {
+    float: left;
+    padding: 20px;
+    width: 70%;
+    background-color: #f1f1f1;
+    /*height: 300px;  only for demonstration, should be removed */
+}
+
+/* Clear floats after the columns */
+section:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Style the footer */
+footer {
+    background-color: #777;
+    padding: 10px;
+    text-align: center;
+    color: white;
+}
+
+/* Responsive layout - makes the two columns/boxes stack on top of each other instead of next to each other, on small screens */
+@media (max-width: 600px) {
+    nav, article {
+        width: 100%;
+        height: auto;
+    }
+}
+</style>
+
+
+<body>
+
+<header>
+<h1>PODDS Web application</h1>
+<p>This application can be used to predict the discolouration from simple flushing events in pipes.</p>
+</header>
+
+<section>
+<nav>
+<h3>Pipe Length (m)</h3>
+<input type="number" id="pipeLength" value="100">
+<h3>Pipe Diameter (m)</h3>
+<input type="number" id="pipeDiameter" value="0.5">
+<h3>Pipe Roughness (m)</h3>
+<input type="number" id="pipeRoughness" value="0.001">
+<h3>Pre-flush Flow Rate (l/s)</h3>
+<input type="number" id="pipeQ0" value="10">
+
+<h3>Flushing Flow Rate (l/s)</h3>
+<input type="number" id="pipeQflush" value="20">
+
+<h3>alpha (k) </h3>
+<input type="number" id="alpha" value="3">
+
+<h3>beta_e (-P/k) </h3>
+<input type="number" id="beta_e" value="0.001666">
+
+</nav>
+
+<article>
+<button onclick="plotFunction()">Plot Turbidity Response</button>
+<button onclick="clearFunction()">Clear Turbidity Response</button>
+
+
+<!--<iframe id="figure" frameborder=0 height=540 width = 1000></iframe> -->
+
+<!--<div id="tester" style="width:1000px;height:540px;"></div>-->
+<div id="tester"></div>
+</article>
+</section>
+
+
+
+
+<script>
+
+
+
+function plotFunction()
+{
+	var L = document.getElementById("pipeLength").value;
+	var D = document.getElementById("pipeDiameter").value;
+	var k = document.getElementById("pipeRoughness").value;
+	var Q0 = document.getElementById("pipeQ0").value/1000;
+	var Qflush = document.getElementById("pipeQflush").value/1000;
+	<!-- VCDM Parameters-->
+	
+	var alpha = document.getElementById("alpha").value;	
+	var beta = document.getElementById("beta_e").value;
+	
+<!--	var alpha = 5	-->
+<!--	var beta = 0.005-->
+	
+	<!-- Undertaking simple scaling calcs-->
+	var A = D*D * 3.1415/4	
+	var V = Qflush  / A		
+	var TurnOver = (L/V)	
+	
+	var maxt = 3*TurnOver
+	var dt =1<!--TurnOver/1000.-->
+	
+	
+	
+	
+
+	<!-- Shear Stresses-->
+	var rho = 998
+	var g = 9.81 
+	var mu = 0.001
+	
+	var Re = rho * Q0 * D / (mu *A)
+	var ff =0.25 / Math.log10(k /(3.7*D) + 5.74/Re**0.9)**2
+	
+	var tau_s_0 = rho * g * (D / 4.0) * ff*Q0**2 / (2*D*A**2*g)
+	
+	
+	
+	<!-- Output condition shear vector-->
+	var Re_f = rho * Qflush * D / (mu *A)
+	var ff_f =0.25 / Math.log10(k /(3.7*D) + 5.74/Re_f**0.9)**2
+	var tau_a =rho * g * (D / 4.0) * ff_f*Qflush**2 / (2*D*A**2*g)
+	var t = []; 
+	var tau_s = [tau_s_0];
+	var dN = [0]
+	var T = [0]
+	for (var i = 1; i <= maxt; i++) {
+   		t.push(i*dt/3600);
+   		tau_s[i] = tau_s[i-1] + beta * (tau_a - tau_s[i-1])
+   		dN[i] = alpha* beta*(tau_a - tau_s[i-1])
+   		T[i] = (4/D)*dN[i]
+	}
+	
+	var T_end = []
+	for(var a=0;a<T.length;a++) {
+  		if(a==0) T_end[a] = T[0];
+  		else T_end[a] = T_end[a-1] + T[a];
+	}
+	
+	Tend2 = []
+	for (var i=1; i<= maxt;i++){
+		if (i<TurnOver/dt)Tend2[i] = T_end[i];
+		else Tend2[i] = T_end[i] - T_end[i -Math.round(TurnOver/dt)];
+		}
+		
+	console.log(TurnOver/dt,maxt);
+	TESTER = document.getElementById('tester');
+	Plotly.plot( TESTER, [{
+	x: t,
+	y: Tend2}], {
+	xaxis:{ title:{text: 'Time (hr)'}},
+	yaxis:{ title:{text: 'Turbidity (PMTU)'}},
+	margin: { t: 0 } },{responsive: true} );
+	
+}
+
+function clearFunction()
+{
+	TESTER = document.getElementById('tester');
+	Plotly.deleteTraces(TESTER, 0);
+}
+</script>
+
+
+
+</body>
+</html>
+
+
