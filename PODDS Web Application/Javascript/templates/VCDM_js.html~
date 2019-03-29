@@ -235,7 +235,7 @@ function clearFunction()
 	TESTER = document.getElementById('tester');
 	Plotly.deleteTraces(TESTER, 0);
 	CONDITION = document.getElementById('Condition');
-	Plotly.deleteTraces(CONDITION, 0);
+	Plotly.deleteTraces(CONDITION.0);
 }
 </script>
 
